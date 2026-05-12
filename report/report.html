@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Data Analytics Final Project" />
+  <title>Amazon Sales Intelligence</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      font-size: 11pt;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<style>
+@page { size: A4; margin: 1.8cm 2cm; }
+body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+       font-size: 10.5pt; line-height: 1.5; color: #1F2937; }
+h1 { color: #FF6B35; border-bottom: 2px solid #FF6B35;
+     padding-bottom: 6px; margin-top: 1.6em; page-break-after: avoid; }
+h2 { color: #1F2937; margin-top: 1.4em; page-break-after: avoid; }
+h3 { color: #374151; margin-top: 1.1em; page-break-after: avoid; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0;
+        page-break-inside: avoid; font-size: 0.94em; }
+th, td { border: 1px solid #E5E7EB; padding: 6px 9px; text-align: left;
+         vertical-align: top; }
+th { background: #F5F7FA; color: #111827; }
+code { background: #F3F4F6; padding: 1px 4px; border-radius: 3px;
+       font-family: Consolas, monospace; font-size: 0.92em; }
+pre { background: #F3F4F6; padding: 10px 12px; border-radius: 5px;
+      overflow-x: auto; page-break-inside: avoid; }
+pre code { background: transparent; padding: 0; }
+img { max-width: 100%; height: auto; page-break-inside: avoid;
+      display: block; margin: 0.6em auto; }
+hr { border: none; border-top: 1px solid #E5E7EB; margin: 1.6em 0; }
+blockquote { border-left: 3px solid #FF6B35; padding: 4px 12px;
+             margin: 1em 0; color: #4B5563; background: #FFF7F2; }
+</style></head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Amazon Sales Intelligence</h1>
+<p class="subtitle">Final Project — Data Analysis and Visualization</p>
+<p class="author">Data Analytics Final Project</p>
+<p class="date">May 2026</p>
+</header>
+<h1 id="1-introduction">1. Introduction</h1>
+<p>This project delivers an end-to-end business-analytics solution on
+top of the <em>Amazon Sale Report</em> dataset — a real transactional
+dump from Amazon India covering April–June 2022. The work spans four
+layers:</p>
+<ol type="1">
+<li><strong>Automated data wrangling</strong> — programmatic cleaning of
+128k+ noisy rows.</li>
+<li><strong>Statistical exploration</strong> — descriptive stats,
+distributional analysis, correlation matrices, and three formal
+hypothesis tests.</li>
+<li><strong>Interactive dashboard</strong> — a multi-page Streamlit
+application with sidebar filters, dynamic charts, geographic
+visualisation, and KPI cards.</li>
+<li><strong>Predictive &amp; generative bonus features</strong> — a
+Holt-Winters 30-day revenue forecast and a Claude-powered AI Insights
+page.</li>
+</ol>
+<p>The business question the dashboard is built to answer is:</p>
+<blockquote>
+<p><strong>Which products, regions, and channels are driving Amazon
+India revenue — and where is the business losing money to
+cancellations?</strong></p>
+</blockquote>
+<h1 id="2-dataset-description">2. Dataset Description</h1>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source file</td>
+<td><code>data/Amazon Sale Report.csv</code></td>
+</tr>
+<tr>
+<td>Raw shape</td>
+<td>128,975 rows × 24 columns</td>
+</tr>
+<tr>
+<td>Cleaned shape</td>
+<td>128,936 rows × 30 columns</td>
+</tr>
+<tr>
+<td>Date range</td>
+<td>2022-03-31 → 2022-06-29 (91 days)</td>
+</tr>
+<tr>
+<td>Geography</td>
+<td>All 28 Indian states + 8 UTs</td>
+</tr>
+<tr>
+<td>Categories</td>
+<td>9 (Set, Kurta, Western Dress, Top, Ethnic Dress, Bottom, …)</td>
+</tr>
+<tr>
+<td>Currency</td>
+<td>INR (₹) — only currency in raw data after filter</td>
+</tr>
+</tbody>
+</table>
+<p>Key columns used downstream: <code>order_id</code>,
+<code>date</code>, <code>status</code>, <code>category</code>,
+<code>size</code>, <code>qty</code>, <code>amount</code>,
+<code>ship_city</code>, <code>ship_state</code>,
+<code>fulfilment</code>, <code>b2b</code>, <code>promotion_ids</code>,
+<code>courier_status</code>.</p>
+<h1 id="3-methodology">3. Methodology</h1>
+<p>The pipeline is structured as three Jupyter notebooks plus a
+Streamlit app:</p>
+<pre><code>data/Amazon Sale Report.csv
+        │
+        ▼
+[01_data_cleaning.ipynb]  ──►  data/Amazon Sale Report Cleaned.csv
+        │
+        ▼
+[02_eda_statistics.ipynb] ──►  report/figures/*.png   (used in this report)
+        │
+        ▼
+[03_forecasting.ipynb]    ──►  data/forecast.csv      (used by the dashboard)
+        │
+        ▼
+[Streamlit app: app.py + pages/]
+   ├── Overview
+   ├── Sales Analytics
+   ├── Geographic
+   ├── Forecasting        (reads forecast.csv)
+   └── AI Insights        (Claude API + templated fallback)</code></pre>
+<p><strong>Tooling.</strong> Python 3.14 · pandas · numpy · seaborn ·
+matplotlib · plotly · scikit-learn · statsmodels · scipy · Streamlit ·
+Anthropic SDK.</p>
+<h1 id="4-data-preprocessing">4. Data Preprocessing</h1>
+<p>Every cleaning decision is justified below. The full code is in
+<code>notebooks/01_data_cleaning.ipynb</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Detection</th>
+<th>Action</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>24th column <code>Unnamed: 22</code> was an empty trailing-delimiter
+artifact</td>
+<td>NA count = 49,050 / 128,975</td>
+<td>Dropped</td>
+<td>No information content</td>
+</tr>
+<tr>
+<td>Column names had inconsistent casing and a trailing space
+(<code>Sales Channel </code>)</td>
+<td>Visual inspection</td>
+<td>Normalised to <code>snake_case</code></td>
+<td>Robust downstream code</td>
+</tr>
+<tr>
+<td><code>amount</code> had 7,795 NAs (6.0%)</td>
+<td><code>isna().sum()</code> audit</td>
+<td>Imputed median by <code>(category, size)</code> → category → global
+median</td>
+<td>Preserves rows; median robust to skew; orders cancel often without
+amount</td>
+</tr>
+<tr>
+<td><code>courier_status</code> had 6,872 NAs</td>
+<td><code>isna().sum()</code> audit</td>
+<td>Filled with <code>'Unknown'</code></td>
+<td>NA = courier hasn't picked up — meaningful state</td>
+</tr>
+<tr>
+<td><code>promotion_ids</code> had 49,153 NAs and long composite
+strings</td>
+<td>Inspection</td>
+<td>Binarised → <code>has_promotion</code>, dropped raw column</td>
+<td>Long IDs not analytically useful</td>
+</tr>
+<tr>
+<td><code>fulfilled_by</code> had 89,698 NAs</td>
+<td>Inspection</td>
+<td>Filled <code>'Other'</code> (NAs corresponded to Amazon-fulfilled
+rows)</td>
+<td>Captures the implicit category</td>
+</tr>
+<tr>
+<td>33 rows had no ship-location at all</td>
+<td><code>dropna(how='all', subset=ship_*)</code></td>
+<td>Dropped</td>
+<td>Un-locatable; &lt;0.03% of data</td>
+</tr>
+<tr>
+<td>City names had duplicates (BENGALURU/BANGALORE, MUMBAI/BOMBAY,
+…)</td>
+<td><code>value_counts()</code> review</td>
+<td>Unified via a hand-curated dictionary</td>
+<td>Otherwise geographic aggregates double-count</td>
+</tr>
+<tr>
+<td>6 exact duplicates on <code>(order_id, sku, qty, amount)</code></td>
+<td><code>duplicated()</code></td>
+<td>Dropped</td>
+<td>Avoid double-counting revenue</td>
+</tr>
+<tr>
+<td>Outliers on <code>amount</code> (1.3%) and <code>qty</code>
+(3.0%)</td>
+<td>IQR fence at Q3 + 3·IQR</td>
+<td><strong>Flagged</strong> in <code>is_amount_outlier</code>,
+<strong>not dropped</strong></td>
+<td>High-value orders are real; dashboard offers an opt-in filter</td>
+</tr>
+<tr>
+<td><code>date</code> was string <code>MM-DD-YY</code></td>
+<td>dtype was <code>object</code></td>
+<td>Parsed with explicit format</td>
+<td>Time-based grouping requires datetime</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Final validation.</strong> After cleaning,
+<code>amount</code> and <code>date</code> have zero NAs;
+<code>revenue</code> is non-negative; 30 columns including six
+engineered features (<code>order_year/month/weekday/day</code>,
+<code>is_cancelled</code>, <code>is_delivered</code>,
+<code>has_promotion</code>, <code>is_amount_outlier</code>,
+<code>is_qty_outlier</code>, <code>revenue</code>).</p>
+<h1 id="5-exploratory-data-analysis">5. Exploratory Data Analysis</h1>
+<h2 id="51-headline-numbers">5.1 Headline numbers</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total revenue (shipped orders)</td>
+<td><strong>₹71,794,993</strong> (₹7.18 Cr)</td>
+</tr>
+<tr>
+<td>Unique orders</td>
+<td><strong>120,350</strong></td>
+</tr>
+<tr>
+<td>Cancellation rate</td>
+<td><strong>14.21 %</strong></td>
+</tr>
+<tr>
+<td>Avg order value (shipped)</td>
+<td><strong>₹649</strong></td>
+</tr>
+<tr>
+<td>Top category by revenue</td>
+<td><strong>Set</strong></td>
+</tr>
+<tr>
+<td>Top state by revenue</td>
+<td><strong>MAHARASHTRA</strong></td>
+</tr>
+<tr>
+<td>Unique cities reached</td>
+<td>7,289</td>
+</tr>
+</tbody>
+</table>
+<h2 id="52-distributions">5.2 Distributions</h2>
+<p>The <code>amount</code> distribution is strongly right-skewed; a log
+transform recovers a clean unimodal shape, confirming standard
+e-commerce behaviour — many small orders, a long tail of high-value
+ones.</p>
+<p><img src="figures/01_amount_distribution.png"
+alt="Amount distribution — raw vs log" /></p>
+<p>Per-category boxplots show <strong>Set</strong> and <strong>Western
+Dress</strong> sustain higher medians than the bulk-volume categories
+(Kurta, Top).</p>
+<p><img src="figures/02_amount_by_category_box.png"
+alt="Amount by category" /></p>
+<h2 id="53-trend-over-time">5.3 Trend over time</h2>
+<p>Daily revenue with a 7-day moving average highlights a sustained dip
+after the mid-May peak. Monthly aggregation reveals a <strong>-10.7 %
+MoM</strong> decline in the latest full month — a signal the dashboard
+flags automatically.</p>
+<p><img src="figures/03_daily_revenue_ma.png"
+alt="Daily revenue with MA" /></p>
+<p><img src="figures/04_monthly_revenue_growth.png"
+alt="Monthly revenue and MoM growth" /></p>
+<h2 id="54-comparative-analysis">5.4 Comparative analysis</h2>
+<p>The top three categories — Set, Kurta, Western Dress — together
+account for the bulk of revenue. Cancellation rates vary noticeably by
+category, with some niche lines hitting &gt;18 % cancels.</p>
+<p><img src="figures/05_revenue_by_category.png"
+alt="Revenue by category" /></p>
+<p><img src="figures/06_cancellation_rate.png"
+alt="Cancellation rate by category" /></p>
+<p>Geographically, Maharashtra, Karnataka, and Tamil Nadu dominate. The
+top 15 states together explain most of the revenue base.</p>
+<p><img src="figures/07_top_states.png"
+alt="Top 15 states by revenue" /></p>
+<h2 id="55-day-of-week--month-heatmap">5.5 Day-of-week × month
+heatmap</h2>
+<p><img src="figures/09_heatmap_dow_month.png"
+alt="Weekday × Month heatmap" /></p>
+<h1 id="6-statistical-analysis">6. Statistical Analysis</h1>
+<p>Three formal tests were run at α = 0.05.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Question</th>
+<th>Statistic</th>
+<th>p-value</th>
+<th>Conclusion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chi-square independence</td>
+<td>Is cancellation independent of category?</td>
+<td>χ² = 61.51 (df = 8)</td>
+<td>2.35 × 10⁻¹⁰</td>
+<td><strong>Reject H₀</strong> — cancellation depends on category</td>
+</tr>
+<tr>
+<td>One-way ANOVA</td>
+<td>Do mean order amounts differ across categories?</td>
+<td>F = 10,873.3</td>
+<td>&lt; 1 × 10⁻¹⁰</td>
+<td><strong>Reject H₀</strong> — category strongly affects amount</td>
+</tr>
+<tr>
+<td>Mann-Whitney U</td>
+<td>Do B2B and B2C amount distributions differ?</td>
+<td>U = 60.66 M</td>
+<td>8 × 10⁻⁶</td>
+<td><strong>Reject H₀</strong> — B2B median (₹665) &gt; B2C median
+(₹612)</td>
+</tr>
+</tbody>
+</table>
+<p>The Pearson and Spearman correlation matrices agree on direction;
+both indicate weak linear relationships between amount, quantity, and
+the cancellation flag (|r| &lt; 0.25), which is what we would expect
+given the varied SKU mix.</p>
+<p><img src="figures/08_correlations.png"
+alt="Pearson and Spearman correlations" /></p>
+<h1 id="7-visualisation-strategy">7. Visualisation Strategy</h1>
+<p>Every chart in the dashboard answers a specific question:</p>
+<table>
+<thead>
+<tr>
+<th>Chart type</th>
+<th>Question answered</th>
+<th>Where used</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bar</td>
+<td>Which categories / states drive revenue?</td>
+<td>Overview, Sales, Geographic</td>
+</tr>
+<tr>
+<td>Line</td>
+<td>How is revenue trending over time?</td>
+<td>Overview, Sales</td>
+</tr>
+<tr>
+<td>Pie / donut</td>
+<td>What is the order-status mix?</td>
+<td>Overview</td>
+</tr>
+<tr>
+<td>Heatmap</td>
+<td>Which weekday × month combinations are strongest? Which variables
+correlate?</td>
+<td>Sales</td>
+</tr>
+<tr>
+<td>Scatter</td>
+<td>How do amount and quantity relate?</td>
+<td>Sales</td>
+</tr>
+<tr>
+<td>Geographic bubble map</td>
+<td>How is demand distributed across India?</td>
+<td>Geographic</td>
+</tr>
+<tr>
+<td>Time-series with forecast</td>
+<td>What is the next-month revenue projection?</td>
+<td>Forecasting</td>
+</tr>
+</tbody>
+</table>
+<p>The dashboard uses a coherent palette anchored by the brand-orange
+<code>#FF6B35</code> for primary callouts and a blue
+<code>#1F77B4</code> for secondary lines.</p>
+<h1 id="8-dashboard-walkthrough">8. Dashboard Walkthrough</h1>
+<p>The Streamlit app exposes five pages, all driven by a shared sidebar
+with <strong>filters</strong>, <strong>dropdowns</strong>, <strong>city
+text search</strong>, <strong>date range</strong> input, and an
+<strong>outlier toggle</strong>. Every chart re-renders as filters
+change.</p>
+<ul>
+<li><strong>Overview</strong> — six KPI cards (Revenue, Orders,
+Cancellation %, AOV, MoM Growth, Best Category) + revenue trend,
+category bar, status donut, and a snapshot expander.</li>
+<li><strong>Sales Analytics</strong> — granularity-selectable
+time-series, DoW × Month heatmap, correlation heatmap, stacked category
+× fulfilment bar, scatter, top-20 orders table, cancellation rate
+table.</li>
+<li><strong>Geographic</strong> — India bubble map, top states bar, top
+cities bar, state-level KPI table.</li>
+<li><strong>Forecasting</strong> — historical line + 30-day Holt-Winters
+forecast with a 95 % interval band; horizon slider.</li>
+<li><strong>AI Insights</strong> — deterministic templated bullets +
+optional Claude- generated narrative based on the user's filters.</li>
+</ul>
+<h1 id="9-ml-forecasting-results">9. ML Forecasting Results</h1>
+<p>Three models were compared on a 30-day hold-out (last 30 of 91
+days):</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>RMSE</th>
+<th>MAE</th>
+<th>MAPE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Naive 7-day MA</td>
+<td>111,844</td>
+<td>91,393</td>
+<td>13.6 %</td>
+</tr>
+<tr>
+<td>Linear Regression (time features)</td>
+<td>375,720</td>
+<td>362,992</td>
+<td>48.3 %</td>
+</tr>
+<tr>
+<td><strong>Holt-Winters (additive, period=7)</strong></td>
+<td><strong>104,787</strong></td>
+<td><strong>89,525</strong></td>
+<td><strong>12.4 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Holt-Winters wins. It was refit on the full series and projects 30
+days forward; results are written to <code>data/forecast.csv</code> for
+the dashboard.</p>
+<p><img src="figures/10_forecast_validation.png"
+alt="Forecast validation" /></p>
+<p><img src="figures/11_forecast_final.png"
+alt="Final forecast — history + 30 days" /></p>
+<p>The Augmented Dickey-Fuller test on the daily series returned p &lt;
+0.001, indicating stationarity — Holt-Winters's additive structure is
+appropriate.</p>
+<h1 id="10-ai-insights-integration">10. AI Insights Integration</h1>
+<p>The AI Insights page combines two layers:</p>
+<ol type="1">
+<li><strong>Templated insights</strong> — pure-Python rules in
+<code>src/llm_insights.py</code>. They run with zero external
+dependencies and always render.</li>
+<li><strong>LLM narrative</strong> — when <code>ANTHROPIC_API_KEY</code>
+is present in <code>.streamlit/secrets.toml</code>, the page sends the
+<em>aggregated</em> KPIs (no raw rows, no PII) to Claude with a system
+prompt that constrains the model to a 3-paragraph executive summary
+covering trends, risks, and recommendations.</li>
+</ol>
+<p>The graceful-fallback design means the dashboard remains fully usable
+without an API key — a deployment requirement on Streamlit Cloud free
+tier.</p>
+<h1 id="11-key-findings--business-recommendations">11. Key Findings
+&amp; Business Recommendations</h1>
+<ol type="1">
+<li><strong>Cancellation rate of 14.2 % is materially above a healthy
+5–10 % band</strong> and varies significantly by category (χ² test, p
+&lt; 10⁻⁹). Recommend a focused review of the highest-cancellation
+lines.</li>
+<li><strong>Revenue is in a -10.7 % MoM decline</strong> in the latest
+full month. The 30-day Holt-Winters forecast projects continued
+softness; demand- stimulation actions (promotion targeting, top-state
+inventory) should be considered.</li>
+<li><strong>Set, Kurta, and Western Dress dominate revenue</strong>,
+with Set in the lead. ANOVA confirms category is a strong driver of
+basket size (F ≈ 10,800). Concentration is a risk — a single-category
+dip would hit topline hard.</li>
+<li><strong>Maharashtra, Karnataka, and Tamil Nadu account for the
+largest revenue slices.</strong> Targeted marketing and logistics should
+be optimised for this trio.</li>
+<li><strong>B2B orders have a 9 % higher median amount than B2C</strong>
+(Mann-Whitney U, p &lt; 10⁻⁵). A small but real lever — worth a
+dedicated B2B onboarding page.</li>
+<li><strong>Outliers are real, not errors</strong> — 1.3 % of amounts
+and 3.0 % of quantities flagged as outliers turn out to be high-value
+bulk orders. The dashboard offers an opt-in filter rather than removing
+them.</li>
+<li><strong>Sunday is the strongest revenue weekday, Thursday the
+weakest.</strong> Worth A/B testing weekday-targeted promotion
+windows.</li>
+</ol>
+<h1 id="12-limitations">12. Limitations</h1>
+<ul>
+<li><strong>No cost-of-goods column</strong> → cannot compute true
+profit; the dashboard reports Revenue and substitutes related KPIs
+(Cancellation %, AOV).</li>
+<li><strong>No <code>customer_id</code></strong> → classic RFM
+segmentation is impossible. Order- level segmentation is used
+instead.</li>
+<li><strong>91 days of data</strong> is a short window for time-series
+forecasting; the forecast is directional, not commit-grade.</li>
+<li><strong>No exogenous variables</strong> (price, marketing spend,
+holidays). Real production forecasting would incorporate these.</li>
+</ul>
+<h1 id="13-conclusion--future-work">13. Conclusion &amp; Future
+Work</h1>
+<p>The project delivers a complete, defendable analytics solution — from
+notebook-grade cleaning and statistics through to an interactive
+dashboard and a working forecast — with every transformation justified
+in code.</p>
+<p>Natural extensions:</p>
+<ul>
+<li>Pull <em>cost-of-goods</em> from a separate source and compute true
+gross margin.</li>
+<li>Add a holiday-aware SARIMAX or LightGBM forecast.</li>
+<li>Implement clickthrough drill-downs on the bubble map (state →
+city).</li>
+<li>Add a scheduled refresh job so the cleaned CSV regenerates
+nightly.</li>
+<li>Wrap the LLM call in a streaming Claude response for snappier
+UX.</li>
+</ul>
+<h1 id="14-references">14. References</h1>
+<ul>
+<li><strong>Dataset</strong>: Amazon Sale Report, Kaggle (uploaded by
+Anandshaw123).</li>
+<li>Python ecosystem: pandas, numpy, plotly, seaborn, scikit-learn,
+statsmodels, scipy, Streamlit.</li>
+<li>LLM: Anthropic Claude Haiku 4.5
+(<code>claude-haiku-4-5-20251001</code>).</li>
+<li>Project source: see <code>plan.txt</code>, <code>project.md</code>,
+and the three notebooks in <code>notebooks/</code>.</li>
+</ul>
+<h1 id="15-appendix--how-to-run-locally">15. Appendix — How to Run
+Locally</h1>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Install dependencies</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-r</span> requirements.txt</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Generate cleaned CSV, figures, and forecast</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> notebooks/01_cleaning.py</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> notebooks/02_eda.py</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> notebooks/03_forecasting.py</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Optional: build executable .ipynb notebooks</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> notebooks/build_notebooks.py</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Launch the dashboard</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ex">streamlit</span> run app.py</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. (Optional) Enable AI Insights</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .streamlit/secrets.toml.example .streamlit/secrets.toml</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># edit secrets.toml and paste your ANTHROPIC_API_KEY</span></span></code></pre></div>
+<p>See <code>DEPLOYMENT.md</code> for Streamlit Cloud deployment
+instructions.</p>
+</body>
+</html>
