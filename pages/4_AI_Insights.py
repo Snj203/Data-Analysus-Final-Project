@@ -1,4 +1,4 @@
-"""AI Insights page — templated bullets + optional Claude-powered narrative."""
+"""AI Insights page — templated bullets + optional Gemini-powered narrative."""
 
 from __future__ import annotations
 
@@ -40,23 +40,22 @@ for bullet in template_insights(kpis, filtered):
 st.markdown('<div class="section-header">Ask the AI analyst</div>',
             unsafe_allow_html=True)
 
-api_key = st.secrets.get("ANTHROPIC_API_KEY") if hasattr(st, "secrets") else None
 try:
-    if api_key is None and hasattr(st, "secrets"):
-        api_key = st.secrets.get("ANTHROPIC_API_KEY", None)
+    api_key = st.secrets.get("GEMINI_API_KEY", None) if hasattr(st, "secrets") else None
 except Exception:
     api_key = None
 
 if not llm_available():
     st.info(
-        "The `anthropic` Python package is not installed in this environment. "
-        "Run `pip install anthropic` to enable the LLM narrative feature."
+        "The `google-genai` Python package is not installed in this environment. "
+        "Run `pip install google-genai` to enable the LLM narrative feature."
     )
 elif not api_key:
     st.info(
-        "No `ANTHROPIC_API_KEY` found in Streamlit secrets. "
+        "No `GEMINI_API_KEY` found in Streamlit secrets. "
         "Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` "
-        "and add your key to enable AI narrative generation."
+        "and add your key to enable AI narrative generation. "
+        "Get a free key at https://aistudio.google.com/apikey."
     )
 else:
     question = st.text_input(
@@ -64,7 +63,7 @@ else:
         value="",
     )
     if st.button("Generate executive summary", type="primary"):
-        with st.spinner("Claude is analysing the filtered slice…"):
+        with st.spinner("Gemini is analysing the filtered slice…"):
             try:
                 context = {
                     **kpis,
@@ -91,10 +90,11 @@ with st.expander("How does this work?"):
         - **Templated insights** are generated from KPI thresholds in pure Python —
           they require no network access and always render.
         - **LLM narrative** sends the filtered KPIs (no raw rows, no PII) to
-          Anthropic's Claude API for a 3-paragraph executive summary. The model
+          Google's Gemini API for a 3-paragraph executive summary. The model
           identifier and a system prompt enforcing analytical caution are
           defined in `src/llm_insights.py`.
-        - API key is read from `st.secrets["ANTHROPIC_API_KEY"]` — never
-          committed to git.
+        - API key is read from `st.secrets["GEMINI_API_KEY"]` — never
+          committed to git. Get a free key at
+          [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
         """
     )

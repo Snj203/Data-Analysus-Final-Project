@@ -1,9 +1,9 @@
-"""LLM-powered insights (Anthropic Claude) with a deterministic fallback.
+"""LLM-powered insights (Google Gemini) with a deterministic fallback.
 
 Design:
   * `template_insights()` always works — pure Python, no network.
   * `llm_narrative()` is only invoked if the user supplies an API key.
-  * Import of `anthropic` is lazy so the dashboard does not crash if the
+  * Import of `google.genai` is lazy so the dashboard does not crash if the
     package is missing.
 """
 
@@ -73,22 +73,24 @@ def template_insights(kpis: dict, df=None) -> list[str]:
 
 def llm_available() -> bool:
     try:
-        import anthropic  # noqa: F401
+        from google import genai  # noqa: F401
         return True
     except ImportError:
         return False
 
 
 def llm_narrative(context: dict[str, Any], api_key: str,
-                  model: str = "claude-haiku-4-5-20251001",
+                  model: str = "gemini-2.5-flash",
                   question: str | None = None) -> str:
-    """Call Claude for a richer narrative. Returns the model's text response.
+    """Call Google Gemini for a richer narrative. Returns the model's text.
 
     Raises on API errors so the page can surface a helpful message.
     """
-    import anthropic
+    from google import genai
+    from google.genai import types
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = genai.Client(api_key=api_key)
+
     system_msg = (
         "You are a senior business analyst working with Amazon India sales data. "
         "Given the KPIs and summary statistics provided, write a concise executive "
@@ -105,14 +107,13 @@ def llm_narrative(context: dict[str, Any], api_key: str,
     if question:
         user_msg += f"\n\nUser question: {question}"
 
-    response = client.messages.create(
+    response = client.models.generate_content(
         model=model,
-        max_tokens=600,
-        system=system_msg,
-        messages=[{"role": "user", "content": user_msg}],
+        contents=user_msg,
+        config=types.GenerateContentConfig(
+            system_instruction=system_msg,
+            max_output_tokens=800,
+            temperature=0.3,
+        ),
     )
-    parts = []
-    for block in response.content:
-        if getattr(block, "type", None) == "text":
-            parts.append(block.text)
-    return "\n".join(parts).strip()
+    return (response.text or "").strip()
