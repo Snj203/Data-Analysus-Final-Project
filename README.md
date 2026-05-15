@@ -1,3 +1,7 @@
+**The Project is deployed and is accesible through link : https://sanz-minb-da-project.streamlit.app/**
+
+
+
 **Final project for the Data Analysis & Visualization course.**
 
 End-to-end data analytics solution on the **Amazon India Sale Report**
