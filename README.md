@@ -1,6 +1,32 @@
+## Submition Files and access
+
 **The Project is deployed and is accesible through link : https://sanz-minb-da-project.streamlit.app/**
 
+**Used dataset: https://www.kaggle.com/datasets/thedevastator/unlock-profits-with-e-commerce-sales-data**
 
+Main Files:
+
+**notebooks/** - Notebooks with data cleaning, eda and forecasting, python scripts that do exactly the same things. 
+
+**report/figures** - All Dashboard files 
+
+Other:
+
+**.streamlit/** - configuration files, enviroment variables
+
+**assets/styles.css** - css styles
+
+**data/** - input dataset,cleaned dataset and forecasting on revenue
+
+**pages/** - streamlit pages
+
+**report/report.html** - report summary
+
+**src/** - Python modules shared by app.py and every page in pages/
+
+**app.py** The Streamlit entrypoint. Renders the Overview page
+
+---
 
 **Final project for the Data Analysis & Visualization course.**
 
